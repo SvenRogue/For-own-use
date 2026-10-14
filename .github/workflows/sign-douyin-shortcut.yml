@@ -23,7 +23,25 @@ jobs:
           import base64, gzip, pathlib, plistlib, json
           root=pathlib.Path("douyin-live-shortcut")
           raw=gzip.decompress(base64.b64decode((root/"workflow.xml.gz.b64").read_text().strip()))
-          assert len(plistlib.loads(raw).get("WFWorkflowActions",[]))>=40
+          doc=plistlib.loads(raw)
+          actions=doc.get("WFWorkflowActions",[])
+          assert len(actions)>=40
+          repaired=0
+          for item in actions:
+              if item.get("WFWorkflowActionIdentifier")!="is.workflow.actions.downloadurl":
+                  continue
+              params=item["WFWorkflowActionParameters"]
+              slot=params.get("WFURL")
+              if isinstance(slot,dict) and slot.get("WFSerializationType")=="WFTextTokenAttachment":
+                  params["WFURL"]={
+                      "WFSerializationType":"WFTextTokenString",
+                      "Value":{"string":"\\uFFFC","attachmentsByRange":{"{0, 1}":slot["Value"]}}
+                  }
+                  repaired+=1
+              assert params.get("WFURL",{}).get("WFSerializationType")=="WFTextTokenString", "Invalid URL action slot"
+          assert repaired>=1, "No malformed URL slots repaired"
+          print("Repair result:",repaired,"of",sum(x.get("WFWorkflowActionIdentifier")=="is.workflow.actions.downloadurl" for x in actions))
+          raw=plistlib.dumps(doc,fmt=plistlib.FMT_XML,sort_keys=False)
           (root/"unsigned.xml").write_bytes(raw)
           (root/"request.json").write_text(json.dumps({"shortcutName":"抖音实况下载器","shortcut":raw.decode("utf-8")},ensure_ascii=False))
           print("XML and JSON generated",len(raw))
