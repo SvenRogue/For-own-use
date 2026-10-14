@@ -6,6 +6,7 @@ on:
     paths:
       - douyin-live-shortcut/workflow.xml.gz.b64
       - .github/workflows/sign-douyin-shortcut.yml
+      - douyin-live-shortcut/build-v5.py
   workflow_dispatch:
 
 permissions:
@@ -17,9 +18,9 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Build clipboard-first Shortcut v4
+      - name: Build clipboard-first Shortcut v5
         run: |
-          python3 douyin-live-shortcut/build-v4.py
+          python3 douyin-live-shortcut/build-v5.py
       - name: Sign with RoutineHub HubSign
         run: |
           curl --fail-with-body -sS -L --retry 2 --max-time 90 \
