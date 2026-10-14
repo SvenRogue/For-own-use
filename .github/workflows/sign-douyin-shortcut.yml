@@ -35,7 +35,7 @@ jobs:
               if isinstance(slot,dict) and slot.get("WFSerializationType")=="WFTextTokenAttachment":
                   params["WFURL"]={
                       "WFSerializationType":"WFTextTokenString",
-                      "Value":{"string":"\\uFFFC","attachmentsByRange":{"{0, 1}":slot["Value"]}}
+                      "Value":{"string":chr(0xfffc),"attachmentsByRange":{"{0, 1}":slot["Value"]}}
                   }
                   repaired+=1
               assert params.get("WFURL",{}).get("WFSerializationType")=="WFTextTokenString", "Invalid URL action slot"
